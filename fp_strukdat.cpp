@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <limits>
+#include <unordered_map>
 
 class Item {
 public:
@@ -189,17 +190,16 @@ void Customer::Checkout(const std::map<std::string, Product>&) {
 
     std::cout << "\nTotal price: $" << total << "\nOrder shipped to: " << destinationCity << "\n";
 
-    // Calculate shipping distance
+    
     DistanceCalculator distanceCalculator;
-    std::string sourceLocation = "surabaya";  // You can change this based on your use case
+    std::string sourceLocation = "surabaya";  
     int shippingDistance = distanceCalculator.CalculateDistance(sourceLocation, destinationCity);
 
-    // Display the shipping distance
     std::cout << "Shipping distance from " << sourceLocation << " to " << destinationCity << ": " << shippingDistance << " locations\n";
 
 
     orderHistory.push_back(cart);
-    cart.clear(); // clear the cart after checkout
+    cart.clear(); 
     status.push_back("Checked out. Total: $" + std::to_string(total));
 }
 
@@ -209,7 +209,6 @@ void Customer::DisplayPersonalStatus() const {
         std::cout << "- " << s << "\n";
     }
 
-    // Display the total price in the cart
     double cartTotal = 0;
     for (const auto& item : cart) {
         cartTotal += item->GetPrice();
@@ -249,29 +248,27 @@ int main() {
     products.emplace("Celana", Product("Celana", 30, 40));
     products.emplace("Topi", Product("Topi", 10, 30));
 
-    // Input customer information
+
     std::string customerName, destinationCity;
 
-    // Loop until a valid city is entered
+
     while (true) {
         std::cout << "Enter your name: ";
         std::getline(std::cin, customerName);
         std::cout << "Enter destination city for shipping: ";
         std::getline(std::cin, destinationCity);
 
-        // Check if the entered city is valid
+       
         std::vector<std::string> validCities = {"mojokerto", "sidoarjo", "lamongan", "nganjuk", "kediri", "malang", "pasuruan", "tuban"};
         if (std::find(validCities.begin(), validCities.end(), destinationCity) != validCities.end()) {
-            break; // Valid city, exit the loop
+            break; 
         } else {
             std::cout << "Invalid destination city. Please choose from the following cities: mojokerto, sidoarjo, lamongan, nganjuk, kediri, malang, pasuruan, tuban\n";
         }
     }
 
-    // Creating instances of Customer
     customers.emplace(customerName, Customer(customerName, destinationCity));
 
-    // Adding products and customers to the graph
     for (auto& product : products) {
         product.second.AddCustomer(&customers[customerName]);
     }
@@ -289,7 +286,7 @@ int main() {
         int choice;
         std::cout << "Enter your choice (1-7): ";
         std::cin >> choice;
-        std::cin.ignore(); // ignore the newline character
+        std::cin.ignore();
 
         switch (choice) {
             case 1:
@@ -316,47 +313,44 @@ int main() {
                 customers[customerName].DisplayInfo();
                 break;
            
-case 6:
-    // Display Shipping Route with Cost
-    {
-        DistanceCalculator distanceCalculator;
-        std::string sourceLocation = "surabaya";  // You can change this based on your use case
-        std::vector<std::string> shippingRoute = distanceCalculator.GetShippingRoute(sourceLocation, destinationCity);
-        std::cout << "\n=== Shipping Route ===\n";
-        std::cout << "From " << sourceLocation << " to " << destinationCity << ":\n";
+            case 6:
+            {
+                DistanceCalculator distanceCalculator;
+                std::string sourceLocation = "surabaya";  
+                std::vector<std::string> shippingRoute = distanceCalculator.GetShippingRoute(sourceLocation, destinationCity);
+                std::cout << "\n=== Shipping Route ===\n";
+                std::cout << "From " << sourceLocation << " to " << destinationCity << ":\n";
 
-        // Print the shipping route with the desired format
-        double totalCost = 0;
-        std::unordered_map<std::string, int> edgeCost;
-        for (size_t i = 0; i < shippingRoute.size(); ++i) {
-            std::string currentLocation = shippingRoute[i];
-            std::string nextLocation = (i + 1 < shippingRoute.size()) ? shippingRoute[i + 1] : "";
-            int cost = 0;
+                double totalCost = 0;
+                std::unordered_map<std::string, int> edgeCost;
+                for (size_t i = 0; i < shippingRoute.size(); ++i) {
+                    std::string currentLocation = shippingRoute[i];
+                    std::string nextLocation = (i + 1 < shippingRoute.size()) ? shippingRoute[i + 1] : "";
+                    int cost = 0;
 
-            // Find the cost for the current route
-            for (const auto& neighborPair : distanceCalculator.GetShippingAdjacencyList().at(currentLocation)) {
-                if (neighborPair.first == nextLocation) {
-                    cost = neighborPair.second;
-                    break;
+                    for (const auto& neighborPair : distanceCalculator.GetShippingAdjacencyList().at(currentLocation)) {
+                        if (neighborPair.first == nextLocation) {
+                            cost = neighborPair.second;
+                            break;
+                        }
+                    }
+
+                    std::cout << (i > 0 ? " -> " : "") << currentLocation;
+                    if (!nextLocation.empty()) {
+                        totalCost += cost;
+                        std::cout << "(" << cost << "k)";
+                    }
                 }
+                std::cout << "\nTotal Cost: " << totalCost << "k" << "\n";
             }
-
-            std::cout << (i > 0 ? " -> " : "") << currentLocation;
-            if (!nextLocation.empty()) {
-                totalCost += cost;
-                std::cout << "(" << cost << "k)";
+            break;
+                case 7:
+                    std::cout << "Exiting program...\n";
+                    return 0;
+                default:
+                    std::cout << "Invalid choice. Please try again.\n";
+                    break;
             }
         }
-        std::cout << "\nTotal Cost: " << totalCost << "k" << "\n";
-    }
-    break;
-            case 7:
-                std::cout << "Exiting program...\n";
-                return 0;
-            default:
-                std::cout << "Invalid choice. Please try again.\n";
-                break;
-        }
-    }
     return 0;
 }
